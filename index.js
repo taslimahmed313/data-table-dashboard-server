@@ -23,6 +23,7 @@ async function run() {
         const dataCollection = client.db("tableData").collection("data");
         const userCollection = client.db("tableData").collection("users");
         const productCollection = client.db("tableData").collection("products");
+        const allUserCollection = client.db("tableData").collection("allUser");
 
         app.get("/data", async(req, res)=>{
             const query = {};
@@ -30,10 +31,10 @@ async function run() {
             res.send(result);
         })
 
-        app.get("/data/:id", async(req, res)=>{
+        app.get("/allUser/:id", async(req, res)=>{
             const id = req.params.id;
             const query = {_id: ObjectId(id)};
-            const result = await dataCollection.findOne(query);
+            const result = await allUserCollection.findOne(query);
             res.send(result)
         })
 
@@ -57,19 +58,39 @@ async function run() {
           res.send(result);
         });
 
-        app.put("/edit/:id", async(req, res)=>{
+        // Admin Panel------------------------------------->>>
+        app.get("/users/admin/:email", async(req, res)=>{
+            const email = req.params.email;
+            const query = { email};
+            const user = await userCollection.findOne(query);
+            res.send({isAdmin: user?.role === "Admin"})
+        })
+
+        app.get("/allUser", async(req, res)=>{
+            const query = {};
+            const result = await allUserCollection.find(query).toArray();
+            res.send(result);
+        })
+
+        app.post("/allUser", async(req, res)=>{
+            const userData = req.body;
+            const result = await allUserCollection.insertOne(userData);
+            res.send(result);
+        })
+
+        app.put("/allUser/:id", async(req, res)=>{
             const id = req.params.id;
-            const result = await dataCollection.updateOne(
+            const result = await allUserCollection.updateOne(
               { _id: ObjectId(id) },
               { $set: req.body }
             );
             res.send(result);
         })
 
-        app.delete("/data/:id", async(req,res)=>{
+        app.delete("/allUser/:id", async(req,res)=>{
             const id = req.params.id;
             const query = {_id: ObjectId(id)};
-            const result = await dataCollection.deleteOne(query);
+            const result = await allUserCollection.deleteOne(query);
             res.send(result);
         })
     }
